@@ -60,7 +60,7 @@ class Query(OpenAISchema):
     )
 
     async def execute(self, dependency_func):
-        print("Executing", f"`self.question`")
+        print("Executing", "`self.question`")
         print("Executing with", len(self.dependancies), "dependancies")
 
         if self.node_type == QueryType.SINGLE_QUESTION:
@@ -113,7 +113,6 @@ QueryPlan.update_forward_refs()
 
 
 def query_planner(question: str, plan=False) -> QueryPlan:
-    PLANNING_MODEL = "gpt-4"
     ANSWERING_MODEL = "gpt-3.5-turbo-0613"
 
     messages = [
@@ -134,6 +133,7 @@ def query_planner(question: str, plan=False) -> QueryPlan:
                 "content": "Lets think step by step to find correct set of queries and its dependencies and not make any assuptions on what is known.",
             },
         )
+        PLANNING_MODEL = "gpt-4"
         completion = openai.ChatCompletion.create(
             model=PLANNING_MODEL,
             temperature=0,
@@ -141,15 +141,15 @@ def query_planner(question: str, plan=False) -> QueryPlan:
             max_tokens=1000,
         )
 
-        messages.append(completion.choices[0].message)
-
-        messages.append(
-            {
-                "role": "user",
-                "content": "Using that information produce the complete and correct query plan.",
-            }
+        messages.extend(
+            (
+                completion.choices[0].message,
+                {
+                    "role": "user",
+                    "content": "Using that information produce the complete and correct query plan.",
+                },
+            )
         )
-
     completion = openai.ChatCompletion.create(
         model=ANSWERING_MODEL,
         temperature=0,
@@ -158,8 +158,7 @@ def query_planner(question: str, plan=False) -> QueryPlan:
         messages=messages,
         max_tokens=1000,
     )
-    root = QueryPlan.from_response(completion)
-    return root
+    return QueryPlan.from_response(completion)
 
 
 if __name__ == "__main__":

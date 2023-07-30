@@ -148,8 +148,7 @@ def parse_tree_to_filesystem(data: str) -> DirectoryTree:
         ],
         max_tokens=1000,
     )
-    root = DirectoryTree.from_response(completion)
-    return root
+    return DirectoryTree.from_response(completion)
 
 
 if __name__ == "__main__":

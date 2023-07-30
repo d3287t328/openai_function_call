@@ -74,10 +74,10 @@ class TaskPlan(OpenAISchema):
         tmp_dep_graph = {item.id: set(item.subtasks) for item in self.task_graph}
 
         def topological_sort(
-            dep_graph: dict[int, set[int]]
-        ) -> Generator[set[int], None, None]:
+                dep_graph: dict[int, set[int]]
+            ) -> Generator[set[int], None, None]:
             while True:
-                ordered = set(item for item, dep in dep_graph.items() if len(dep) == 0)
+                ordered = {item for item, dep in dep_graph.items() if len(dep) == 0}
                 if not ordered:
                     break
                 yield ordered
@@ -159,9 +159,7 @@ def task_planner(question: str) -> TaskPlan:
         messages=messages,
         max_tokens=1000,
     )
-    root = TaskPlan.from_response(completion)
-
-    return root
+    return TaskPlan.from_response(completion)
 
 
 if __name__ == "__main__":
